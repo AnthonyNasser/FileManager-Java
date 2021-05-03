@@ -19,13 +19,13 @@ public class TreeRenderer {
   }
 
   public void buildTree() {
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode(FilePanel.defaultPathway);
     treeModel = new DefaultTreeModel(root);
 
     FileFetcher fetcher = new FileFetcher(); 
 
     File[] baseFile = fetcher.fetchFiles(this.path);
-    fetcher.nodify(baseFile, root);
+    fetcher.nodify(baseFile,root);
     tree.setModel(treeModel);
   }
 
@@ -52,9 +52,11 @@ public class TreeRenderer {
     * @params: File array to put into root, the root node, directory flag tells whether to get directories
     */
     public void nodify(File[] files, DefaultMutableTreeNode root) {
-          if (files != null) {
+    	 
+    	if (files != null) {
+        
             for (int i = 0; i < files.length; i++) {
-  
+              
               DefaultMutableTreeNode node = new DefaultMutableTreeNode(
                   files[i].getAbsolutePath()
               );
@@ -95,7 +97,7 @@ public class TreeRenderer {
         File[] files;
         files = baseDirectory.listFiles();
 
-        if (files.length != 0) { 
+        if (files != null) { 
           for (int i = 0; i < files.length; i++) {
             directoryFiles.add(files[i].getAbsolutePath());
           }

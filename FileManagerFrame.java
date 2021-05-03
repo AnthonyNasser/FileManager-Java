@@ -4,6 +4,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JInternalFrame;
 
 public class FileManagerFrame extends JInternalFrame {
+
     public FileManagerFrame() {
         this.setResizable(true);
         this.setMaximizable(true);
@@ -11,6 +12,22 @@ public class FileManagerFrame extends JInternalFrame {
         this.setClosable(true);
         this.setSize(800,500);
         this.setVisible(true);
+    }
+
+    public static class CascadeActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JInternalFrame[] frames = AppBuilder.dp.getAllFrames();
+            int x = 30 * (frames.length - 1);
+            int y = 30 * (frames.length - 1);
+            if (frames.length > 1) {
+                for (int i = 0; i < frames.length; i++) {
+                    frames[i].setLocation(x, y);
+                    x -= 30;
+                    y -= 30;
+                }
+            }
+        }
     }
     public static class ButtonActionListener implements ActionListener {
         @Override

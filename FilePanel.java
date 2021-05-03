@@ -14,20 +14,21 @@ import java.io.IOException;
 public class FilePanel extends JSplitPane {
     private DirectoryPanel leftDirPanel;
     private DirectoryPanel rightDirPanel;
-
+    public static String leftDirectoryPath = "C:\\";
+    public static String rightDirectoryPath = "";
+    public static String defaultPathway = "";
     private JTree leftTree;
     private JTree rightTree;
-
     public String pathLeft;
     public String pathRight;
 
     private TreeSelectionListener listener = new FileActionListener();
 
-    // Cascading logic goes here
     // instantiates JSplitPane with two Directory Panels C:\\Users\\Antho\\Documents\\Projects
     public FilePanel() {
-        leftDirPanel = new DirectoryPanel("C:\\");
-        rightDirPanel = new DirectoryPanel("");
+    
+        leftDirPanel = new DirectoryPanel(leftDirectoryPath);
+        rightDirPanel = new DirectoryPanel(rightDirectoryPath);
 
         leftTree = leftDirPanel.getTree();
         rightTree = rightDirPanel.getTree();
@@ -35,7 +36,7 @@ public class FilePanel extends JSplitPane {
         this.setLeftComponent(leftDirPanel);
         this.setRightComponent(rightDirPanel);
 
-        this.setSize(200, 200);
+        this.setSize(150, 150);
         this.setVisible(true);
 
 
@@ -44,9 +45,6 @@ public class FilePanel extends JSplitPane {
         rightTree.addTreeSelectionListener(listener);
         rightTree.addMouseListener((MouseListener) listener);
     }
-
-    // Action Listener to Execute Files
-    // Action Listener to change right directory panel based on left click
 
     // Action listener to Rename
     // Action Listener to Delete
@@ -73,6 +71,8 @@ public class FilePanel extends JSplitPane {
 
       public void displayRight(TreeSelectionEvent e) {
         e = event;
+        FilePanel.rightDirectoryPath = event.getPath().getLastPathComponent().toString();
+        FilePanel.defaultPathway = rightDirectoryPath;
         rightDirPanel = new DirectoryPanel(event.getPath().getLastPathComponent().toString());
         JTree t = rightDirPanel.getTree();
         t.addTreeSelectionListener(listener);

@@ -11,12 +11,13 @@ public class AppBuilder {
     static JDesktopPane dp;
 
     public AppBuilder() {
-        final int DIMENSION = 1500;
+        final int DIMENSION_X = 950;
+        final int DIMENSION_Y = 700;
 
         JPanel mb = new MenuBar();
         JToolBar tb = new ToolBar();
         dp = new JDesktopPane();
-
+    
         JFrame jf = new JFrame();
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -30,7 +31,8 @@ public class AppBuilder {
         jf.add(mb,BorderLayout.NORTH);
         jf.add(tb, BorderLayout.PAGE_START);
     
-        jf.setSize(DIMENSION, DIMENSION);
+        jf.setSize(DIMENSION_X, DIMENSION_Y);
+        jf.setLocationRelativeTo(null);
         jf.setVisible(true);
     }
 }

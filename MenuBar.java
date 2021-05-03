@@ -46,10 +46,13 @@ public class MenuBar extends JPanel {
 
   private void windowItems() {
     JMenuItem w = new JMenuItem("New Window");
+    JMenuItem w2 = new JMenuItem("Cascade");
     ActionListener buttonAL = new FileManagerFrame.ButtonActionListener();
+    ActionListener cascadeAL = new FileManagerFrame.CascadeActionListener();
     w.addActionListener(buttonAL);
+    w2.addActionListener(cascadeAL);
     window.add(w);
-
+    window.add(w2);
   }
 
   private void buildMenuBar() {
