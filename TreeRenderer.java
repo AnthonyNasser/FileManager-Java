@@ -52,34 +52,36 @@ public class TreeRenderer {
     * @params: File array to put into root, the root node, directory flag tells whether to get directories
     */
     public void nodify(File[] files, DefaultMutableTreeNode root) {
+          if (files != null) {
             for (int i = 0; i < files.length; i++) {
-
-            DefaultMutableTreeNode node = new DefaultMutableTreeNode(
-                files[i].getAbsolutePath()
-            );
-
-            // Directory Detector
-            if (files[i].isDirectory()) {
-                DefaultMutableTreeNode subroot = new DefaultMutableTreeNode(
-                files[i].getAbsolutePath()
-                );
-
-                root.add(subroot);
-
-                ArrayList<String> dFiles = this.directoryFiles(files[i].getAbsolutePath());
-
-                for (String k : dFiles) {
-                DefaultMutableTreeNode subnode = new DefaultMutableTreeNode(k);
-                if(new File(k).isDirectory()) 
-                    subroot.add(subnode);
-                }
-
-            } else {
-                root.add(node);
+  
+              DefaultMutableTreeNode node = new DefaultMutableTreeNode(
+                  files[i].getAbsolutePath()
+              );
+              // Directory Detector
+              if (files[i].isDirectory()) {
+                  DefaultMutableTreeNode subroot = new DefaultMutableTreeNode(
+                    files[i].getAbsolutePath()
+                  );
+                  root.add(subroot);
+  
+                  ArrayList<String> dFiles = this.directoryFiles(files[i].getAbsolutePath());
+  
+                  if (dFiles.size() != 0 && dFiles.get(0).equals("empty")) {
+                    break;
+                  }
+  
+                  for (String k : dFiles) {
+                    DefaultMutableTreeNode subnode = new DefaultMutableTreeNode(k);
+                    if (new File(k).isDirectory()) 
+                        subroot.add(subnode);
+                  }
+              } else {
+                  root.add(node);
+              }
             }
-            }
+          }
         }
-    
 
     /*
     * @desc: called when fetcher finds a folder, gets all files within folder and returns them
@@ -93,10 +95,16 @@ public class TreeRenderer {
         File[] files;
         files = baseDirectory.listFiles();
 
-        for (int i = 0; i < files.length; i++) {
-        directoryFiles.add(files[i].getAbsolutePath());
+        if (files.length != 0) { 
+          for (int i = 0; i < files.length; i++) {
+            directoryFiles.add(files[i].getAbsolutePath());
+          }
+          return directoryFiles;
+        } else {
+          ArrayList<String> empty = new ArrayList<String>();
+          empty.add("empty");
+          return empty;
         }
-        return directoryFiles;
     }
   }
 }

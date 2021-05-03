@@ -45,8 +45,11 @@ public class MenuBar extends JPanel {
   }
 
   private void windowItems() {
-    JMenuItem w = new JMenuItem("window");
+    JMenuItem w = new JMenuItem("New Window");
+    ActionListener buttonAL = new FileManagerFrame.ButtonActionListener();
+    w.addActionListener(buttonAL);
     window.add(w);
+
   }
 
   private void buildMenuBar() {

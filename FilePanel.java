@@ -2,13 +2,14 @@ import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.tree.TreePath;
 
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-
-import java.awt.Dimension;
 
 public class FilePanel extends JSplitPane {
     private DirectoryPanel leftDirPanel;
@@ -21,11 +22,12 @@ public class FilePanel extends JSplitPane {
     public String pathRight;
 
     private TreeSelectionListener listener = new FileActionListener();
+
     // Cascading logic goes here
-    // instantiates JSplitPane with two Directory Panels
+    // instantiates JSplitPane with two Directory Panels C:\\Users\\Antho\\Documents\\Projects
     public FilePanel() {
-        leftDirPanel = new DirectoryPanel("C:\\Users\\Antho\\Documents\\Projects");
-        rightDirPanel = new DirectoryPanel("C:\\Users\\Antho\\Documents\\Projects");
+        leftDirPanel = new DirectoryPanel("C:\\");
+        rightDirPanel = new DirectoryPanel("");
 
         leftTree = leftDirPanel.getTree();
         rightTree = rightDirPanel.getTree();
@@ -38,7 +40,9 @@ public class FilePanel extends JSplitPane {
 
 
         leftTree.addTreeSelectionListener(listener);
+        leftTree.addMouseListener((MouseListener) listener);
         rightTree.addTreeSelectionListener(listener);
+        rightTree.addMouseListener((MouseListener) listener);
     }
 
     // Action Listener to Execute Files
@@ -48,40 +52,44 @@ public class FilePanel extends JSplitPane {
     // Action Listener to Delete
     // Action Listener to Copy/Paste
 
-    public class FileActionListener implements TreeSelectionListener {
+    public class FileActionListener extends MouseAdapter implements TreeSelectionListener {
 
-        private TreeSelectionEvent event;
-      
-        /* 
-        * @desc: execute a file on click
-        * @param: The file thats clicked on as a TreeSelectionEvent
-        */
-        @Override
-        public void valueChanged(TreeSelectionEvent e) {
-          this.event = e;
-          TreePath path = event.getPath();
-          FileExecute executor = new FileExecute();
-          File pathFile = new File(path.getLastPathComponent().toString());
-          
-          System.out.println(path.getLastPathComponent());
-          if (pathFile.isDirectory()) {
-            displayRight(e);
-            executor.execute(path.getLastPathComponent());
-            System.out.println(path.getLastPathComponent());
-          } else {
-            executor.execute(path.getLastPathComponent());
-          }
-        }
-      
-        public void displayRight(TreeSelectionEvent e) {
-          e = event;
-          rightDirPanel = new DirectoryPanel(event.getPath().getLastPathComponent().toString());
-          JTree t = rightDirPanel.getTree();
-          t.addTreeSelectionListener(listener);
-          FilePanel.this.setRightComponent(rightDirPanel);
-          rightDirPanel.setViewportView(rightDirPanel.getTree());
+      private TreeSelectionEvent event;
+      FileExecute executor = new FileExecute();
+
+      /* 
+      * @desc: execute a file on click
+      * @param: The file thats clicked on as a TreeSelectionEvent
+      */
+      @Override
+      public void valueChanged(TreeSelectionEvent e) {
+        this.event = e;
+        TreePath path = event.getPath();
+        File pathFile = new File(path.getLastPathComponent().toString());
+        if (pathFile.isDirectory()) {
+          displayRight(e);
         }
       }
+
+      public void displayRight(TreeSelectionEvent e) {
+        e = event;
+        rightDirPanel = new DirectoryPanel(event.getPath().getLastPathComponent().toString());
+        JTree t = rightDirPanel.getTree();
+        t.addTreeSelectionListener(listener);
+        t.addMouseListener((MouseListener) listener);
+        FilePanel.this.setRightComponent(rightDirPanel);
+        rightDirPanel.setViewportView(rightDirPanel.getTree());
+      }
+
+      public void mouseClicked(MouseEvent e) {
+          if (e.getClickCount() > 1) {
+            executor.execute(event.getPath().getLastPathComponent());
+          }
+          if (e.getButton() == 3) {
+            System.out.println("Right click detected");
+          }
+      }
+    }
     public class FileExecute {
     /*
     * @desc: opens or executes file
@@ -96,5 +104,5 @@ public class FilePanel extends JSplitPane {
             System.out.println(ex.toString());
         }
     }
-    }
+  }
 }

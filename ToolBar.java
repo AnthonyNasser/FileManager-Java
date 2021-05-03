@@ -26,7 +26,6 @@ public class ToolBar extends JToolBar{
 
         drives = new JComboBox();
         for (File file : filePaths) {
-            System.out.println(file + " " + fsView.getSystemDisplayName(file));
             drives.addItem(file + " " + fsView.getSystemDisplayName(file));
         }
 
