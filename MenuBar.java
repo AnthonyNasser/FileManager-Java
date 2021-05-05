@@ -2,14 +2,13 @@ import java.io.File;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.awt.BorderLayout;
 
-public class MenuBar extends JPanel {
+public class MenuBar extends JMenuBar {
 
   JMenu file;
   JMenu help;
@@ -40,8 +39,14 @@ public class MenuBar extends JPanel {
   }
 
   private void treeItems() {
-    JMenuItem t = new JMenuItem("Tree");
+    JMenuItem t = new JMenuItem("Expand Branch");
+    JMenuItem t2 = new JMenuItem("Collapse Branch");
+    ActionListener expand = new FilePanel.ExpandTreeActionListener();
+    ActionListener collapse = new FilePanel.CollapseTreeActionListener();
+    t.addActionListener(expand);
+    t2.addActionListener(collapse);
     tree.add(t);
+    tree.add(t2);
   }
 
   private void windowItems() {
@@ -79,4 +84,7 @@ public class MenuBar extends JPanel {
       System.exit(0);
     }
   }
+  
+
+
 }

@@ -10,7 +10,7 @@ public class FileManagerFrame extends JInternalFrame {
         this.setMaximizable(true);
         this.setIconifiable(true);
         this.setClosable(true);
-        this.setSize(800,500);
+        this.setSize(750, 450);
         this.setVisible(true);
     }
 
@@ -39,12 +39,14 @@ public class FileManagerFrame extends JInternalFrame {
             */
             FilePanel fp = new FilePanel();
             JInternalFrame fileManager = new FileManagerFrame();
+            String userDrive = ToolBar.drives.getSelectedItem().toString().substring(0, 3);
             fileManager.add(fp);
+            fp.leftDirPanel.treeRenderer.rootPath = userDrive;
+            ToolBar.activeDrive = userDrive;
+            fp.leftDirPanel.treeRenderer.buildTree();
+            fileManager.setTitle(ToolBar.activeDrive);
+
             AppBuilder.dp.add(fileManager);
         }
-        // @Override
-        // public void actionPerformed(ActionEvent e) {
-        //     if (e.getActionCommand().equals("Window"))
-        // }
     } 
 }

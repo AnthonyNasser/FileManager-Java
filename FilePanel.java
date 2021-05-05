@@ -1,94 +1,196 @@
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.filechooser.FileSystemView;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.awt.Dimension;
+import java.awt.Font;
 
 public class FilePanel extends JSplitPane {
-    private DirectoryPanel leftDirPanel;
-    private DirectoryPanel rightDirPanel;
-    public static String leftDirectoryPath = "C:\\";
-    public static String rightDirectoryPath = "";
-    public static String defaultPathway = "";
-    private JTree leftTree;
-    private JTree rightTree;
-    public String pathLeft;
-    public String pathRight;
-
     private TreeSelectionListener listener = new FileActionListener();
+    public JScrollPane rightSide;
+    public DefaultListModel model;
+    public JList rightList;
+    public ArrayList<File> rightFileList;
+  
+    public static DirectoryPanel leftDirPanel;
+    public static String leftDirectoryPath = "C:\\";
+    public static String defaultPathway = "";
+    public static JTree leftTree;
+    public static Boolean detailsState; 
 
-    // instantiates JSplitPane with two Directory Panels C:\\Users\\Antho\\Documents\\Projects
+
     public FilePanel() {
     
         leftDirPanel = new DirectoryPanel(leftDirectoryPath);
-        rightDirPanel = new DirectoryPanel(rightDirectoryPath);
-
         leftTree = leftDirPanel.getTree();
-        rightTree = rightDirPanel.getTree();
+
+        rightSide = new JScrollPane();
+        model = new DefaultListModel<>();
+        rightList = new JList<>( model );
+        rightFileList = new ArrayList<File>();
+        rightSide.setViewportView(rightList);
+        rightSide.setHorizontalScrollBar(new JScrollBar(JScrollBar.HORIZONTAL));
+        rightList.setFont(new Font("Roboto", Font.PLAIN, 12));
 
         this.setLeftComponent(leftDirPanel);
-        this.setRightComponent(rightDirPanel);
-
-        this.setSize(150, 150);
-        this.setVisible(true);
-
+        this.setRightComponent(rightSide);
+        this.setOneTouchExpandable(true);
 
         leftTree.addTreeSelectionListener(listener);
         leftTree.addMouseListener((MouseListener) listener);
-        rightTree.addTreeSelectionListener(listener);
-        rightTree.addMouseListener((MouseListener) listener);
+        rightList.addMouseListener((MouseListener) listener);
+        
+        this.setAutoscrolls(true);
+        this.setSize(new Dimension(950, 700));
+        this.setVisible(true);
+
+        detailsState = true;
     }
 
-    // Action listener to Rename
-    // Action Listener to Delete
-    // Action Listener to Copy/Paste
+    public static String formatToDetails( File file ) {
+        if (!FilePanel.detailsState)
+          return "";
+        int cutBy = 20;
+        String fileName = file.getName();
 
-    public class FileActionListener extends MouseAdapter implements TreeSelectionListener {
-
-      private TreeSelectionEvent event;
-      FileExecute executor = new FileExecute();
-
-      /* 
-      * @desc: execute a file on click
-      * @param: The file thats clicked on as a TreeSelectionEvent
-      */
-      @Override
-      public void valueChanged(TreeSelectionEvent e) {
-        this.event = e;
-        TreePath path = event.getPath();
-        File pathFile = new File(path.getLastPathComponent().toString());
-        if (pathFile.isDirectory()) {
-          displayRight(e);
+        if (fileName.length() > cutBy) {
+          fileName = fileName.substring(0, cutBy) + " ... ";
         }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM / dd / yyyy");
+        DecimalFormat decFormat = new DecimalFormat("#, ###");
+
+        String formatted = String.format("%-30s %17s %17s", fileName, dateFormat.format(file.lastModified()), decFormat.format(file.lastModified()));
+        return formatted;
       }
 
-      public void displayRight(TreeSelectionEvent e) {
-        e = event;
-        FilePanel.rightDirectoryPath = event.getPath().getLastPathComponent().toString();
-        FilePanel.defaultPathway = rightDirectoryPath;
-        rightDirPanel = new DirectoryPanel(event.getPath().getLastPathComponent().toString());
-        JTree t = rightDirPanel.getTree();
-        t.addTreeSelectionListener(listener);
-        t.addMouseListener((MouseListener) listener);
-        FilePanel.this.setRightComponent(rightDirPanel);
-        rightDirPanel.setViewportView(rightDirPanel.getTree());
+      public class FileActionListener extends MouseAdapter implements TreeSelectionListener {
+
+        private TreeSelectionEvent event;
+        FileExecute executor = new FileExecute();
+
+        @Override
+        public void valueChanged(TreeSelectionEvent e) {
+            this.event = e;
+            TreePath p = event.getPath();
+            String path = p.getPathComponent(0).toString();
+            for(int i = 1; i < p.getPathCount(); i++) {
+              path += "\\" + p.getPathComponent(i);
+            }
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent();
+            if (node == null) {
+              return;
+            }
+            File newFile = new File(path);
+            if (newFile.isDirectory() && newFile.exists()) {
+              try {
+                if (newFile.list() != null) {
+                  for (String file : newFile.list()) {
+                    if (new File(file).isDirectory()) {
+                      node.add(new DefaultMutableTreeNode(file));
+                    }
+                  }
+                  displayRight(newFile);
+                }
+              } catch (Exception err) {
+                System.out.println("Cannot open File! " + err);
+              }
+            }
+          }
+
+        public void displayRight(File directory) {
+          //           // Get metadata and create an icon
+          // File iconFile = new File("C:\\Windows\\regedit.exe");
+          // Icon icon = FileSystemView.getFileSystemView().getSystemIcon(iconFile);
+
+          // // show the icon
+          // JLabel ficon = new JLabel(File, icon, SwingConstants.LEFT);
+          File[] files;
+          files = directory.listFiles();
+          if(files == null){
+              return;
+          }
+
+          model.clear();
+          rightList.removeAll();
+          rightFileList.clear();
+          for (int i = 0; i < files.length; i++) {
+              if(files[i].isDirectory()){
+                  model.addElement(files[i].getName());
+                  rightFileList.add(files[i]);
+              }
+          }
+          for (int i = 0; i < files.length; i++){
+            if (!files[i].isDirectory()){
+              if (FilePanel.this.detailsState){
+                  String fileWithDetails = FilePanel.this.formatToDetails(files[i]);
+                  model.addElement(fileWithDetails);
+              } else {
+                  model.addElement(files[i].getName());
+              }
+              rightFileList.add(files[i]);
+          }
+        }
+        rightList.setModel(model);
       }
 
+      public void deleteFile(int index) {
+        model.remove(index);
+        rightFileList.remove(index);
+      }
+      
       public void mouseClicked(MouseEvent e) {
-          if (e.getClickCount() > 1) {
-            executor.execute(event.getPath().getLastPathComponent());
+        if (e.getClickCount() > 2) {
+          TreePath pathS = event.getPath();
+          String path = "";
+          for(int i = 0; i < pathS.getPathCount(); i++) {
+              path += "\\" + pathS.getPathComponent(i);
           }
-          if (e.getButton() == 3) {
-            System.out.println("Right click detected");
-          }
+          executor.execute(path);
+        }
+        if (e.getButton() == 3) {
+          System.out.println("Right click detected");
+        }
+    }
+
+    /*
+    * @desc: get all files and folders within specified file name
+    * @param: file to get stuff from
+    * @return: an arraylist full of the folders and files
+    */
+    public File[] fetchFiles(String fileName) {
+          File[] files;
+          File baseFile = new File(fileName);
+
+          files = baseFile.listFiles();
+          return files;
       }
+
     }
     public class FileExecute {
     /*
@@ -105,4 +207,40 @@ public class FilePanel extends JSplitPane {
         }
     }
   }
+
+
+  public static class ExpandTreeActionListener implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        FilePanel.setNodeExpandedState(leftTree, (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent(), true);
+    }
+  }
+  public static class CollapseTreeActionListener implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        FilePanel.setNodeExpandedState(leftTree, (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent(), false);
+    }
+  }
+  
+  public static void setNodeExpandedState(JTree tree, DefaultMutableTreeNode node, boolean expanded) {
+        if (node != null) {
+          ArrayList<DefaultMutableTreeNode> nodeList = new ArrayList<DefaultMutableTreeNode>();
+          for (int i = 0; i < node.getChildCount(); i++) {
+            nodeList.add( (DefaultMutableTreeNode) node.getChildAt(i));
+          }
+
+          for (DefaultMutableTreeNode treeNode : nodeList) {
+              setNodeExpandedState(tree, treeNode, expanded);
+          }
+          if (!expanded && node.isRoot()) {
+              return;
+          }
+          TreePath path = new TreePath(node.getPath());
+          if (expanded) {
+              tree.expandPath(path);
+          } else {
+              tree.collapsePath(path);
+          }
+      }   
+    }
 }

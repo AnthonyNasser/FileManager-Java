@@ -3,36 +3,67 @@ import java.awt.BorderLayout;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
-public class AppBuilder {
+public class AppBuilder extends JFrame{
 
-    static JDesktopPane dp;
+    JPanel midPanel, topPanel;
+    JFrame baseFrame;
+    JMenuBar menuBar;
+    JToolBar toolBar;
+    public static JDesktopPane dp;
+    FileManagerFrame initialFrame;
+    FilePanel initialFilePanel;
+
+    public static final int WIDTH_FM = 750;
+    public static final int HEIGHT_FM = 450;
+
+    private final int WIDTH_JF = 950;
+    private final int HEIGHT_JF = 700;
 
     public AppBuilder() {
-        final int DIMENSION_X = 950;
-        final int DIMENSION_Y = 700;
-
-        JPanel mb = new MenuBar();
-        JToolBar tb = new ToolBar();
+        midPanel = new JPanel();
+        topPanel = new JPanel();
+        baseFrame = this;
+        menuBar = new MenuBar();
+        toolBar = new ToolBar();
         dp = new JDesktopPane();
-    
-        JFrame jf = new JFrame();
-        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        initialFrame = new FileManagerFrame();
+        initialFilePanel = new FilePanel();
 
-        FilePanel fp = new FilePanel();
-        JInternalFrame jif = new FileManagerFrame();
+        String userDrive = ToolBar.drives.getSelectedItem().toString().substring(0, 3);
+        initialFilePanel.leftDirPanel.treeRenderer.rootPath = userDrive;
+        ToolBar.activeDrive = userDrive;
+        initialFilePanel.leftDirPanel.treeRenderer.buildTree();
+        initialFrame.setTitle(ToolBar.activeDrive);
 
-        
-        jif.add(fp);
-        dp.add(jif,BorderLayout.CENTER);
-        jf.add(dp);
-        jf.add(mb,BorderLayout.NORTH);
-        jf.add(tb, BorderLayout.PAGE_START);
+        initialFrame.setSize(WIDTH_FM, HEIGHT_FM);
+        initialFrame.setTitle(ToolBar.activeDrive);
+    }
     
-        jf.setSize(DIMENSION_X, DIMENSION_Y);
-        jf.setLocationRelativeTo(null);
-        jf.setVisible(true);
+    public void buildApp() {
+        this.setLocationRelativeTo(null);
+        this.setSize(WIDTH_JF, HEIGHT_JF);
+        this.setTitle("Epic Java File-Manager");
+
+        topPanel.setLayout(new BorderLayout());
+        midPanel.setLayout(new BorderLayout());
+
+        topPanel.add(menuBar, BorderLayout.NORTH);
+        topPanel.add(toolBar, BorderLayout.SOUTH);
+
+        initialFrame.add(initialFilePanel);
+        dp.add(initialFrame);
+
+        midPanel.add(dp, BorderLayout.CENTER);
+        midPanel.add(topPanel, BorderLayout.NORTH);
+
+        this.add(midPanel, BorderLayout.CENTER);
+
+        initialFrame.setVisible(true);
+        midPanel.setVisible(true);
+        this.setVisible(true);
     }
 }
