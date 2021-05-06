@@ -1,3 +1,4 @@
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -6,11 +7,9 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.filechooser.FileSystemView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,6 +20,8 @@ import java.awt.event.ActionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import FilePanel.FileActionListener.RightSideMouse;
+
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
@@ -29,16 +30,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Component;
 
 public class FilePanel extends JSplitPane {
     private TreeSelectionListener listener = new FileActionListener();
+    private RightSideMouse listenRight = new RightSideMouse();
     public JScrollPane rightSide;
     public DefaultListModel model;
     public JList rightList;
     public ArrayList<File> rightFileList;
   
     public static DirectoryPanel leftDirPanel;
-    public static String leftDirectoryPath = "C:\\";
+    public static String leftDirectoryPath = ToolBar.activeDrive;
     public static String defaultPathway = "";
     public static JTree leftTree;
     public static Boolean detailsState; 
@@ -63,29 +66,54 @@ public class FilePanel extends JSplitPane {
 
         leftTree.addTreeSelectionListener(listener);
         leftTree.addMouseListener((MouseListener) listener);
-        rightList.addMouseListener((MouseListener) listener);
+        rightList.addMouseListener((MouseListener) listenRight);
         
         this.setAutoscrolls(true);
         this.setSize(new Dimension(950, 700));
         this.setVisible(true);
 
+        // rightList.setCellRenderer(new DefaultListCellRenderer() {
+        //   @Override
+        //   public Component getListCellRendererComponent(JList list, Object value, int index, boolean selected, boolean cellHasFocus) {
+        //       super.getListCellRendererComponent(list, value, index, selected, cellHasFocus);
+        //       if (value instanceof String) {
+        //           if(rightFileList.size() > 0) {
+        //               if (rightFileList.get(index).isDirectory()) {
+        //                   setIcon(UIManager.getIcon("FileChooser.newFolderIcon"));
+        //               } else {
+        //                   setIcon(UIManager.getIcon("FileView.fileIcon"));
+        //               }
+        //               String name = (String) value;
+        //               setText(name);
+        //           }
+        //       }
+        //       return this;
+        //   }
+        // });
         detailsState = true;
     }
 
     public static String formatToDetails( File file ) {
         if (!FilePanel.detailsState)
           return "";
-        int cutBy = 20;
+        int cutBy = 10;
         String fileName = file.getName();
 
         if (fileName.length() > cutBy) {
-          fileName = fileName.substring(0, cutBy) + " ... ";
+          fileName = fileName.substring(0, cutBy) + "...";
         }
+        if (fileName.length() < cutBy) {
+          int spacesToAdd = cutBy - fileName.length();
+          for (int i = 0; i < spacesToAdd; i ++) {
+            fileName += " ";
+          }
+        }
+
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM / dd / yyyy");
         DecimalFormat decFormat = new DecimalFormat("#, ###");
 
-        String formatted = String.format("%-30s %17s %17s", fileName, dateFormat.format(file.lastModified()), decFormat.format(file.lastModified()));
+        String formatted = String.format("%-55s %30s %30s", fileName, dateFormat.format(file.lastModified()), decFormat.format(file.lastModified()));
         return formatted;
       }
 
@@ -124,12 +152,6 @@ public class FilePanel extends JSplitPane {
           }
 
         public void displayRight(File directory) {
-          //           // Get metadata and create an icon
-          // File iconFile = new File("C:\\Windows\\regedit.exe");
-          // Icon icon = FileSystemView.getFileSystemView().getSystemIcon(iconFile);
-
-          // // show the icon
-          // JLabel ficon = new JLabel(File, icon, SwingConstants.LEFT);
           File[] files;
           files = directory.listFiles();
           if(files == null){
@@ -141,7 +163,7 @@ public class FilePanel extends JSplitPane {
           rightFileList.clear();
           for (int i = 0; i < files.length; i++) {
               if(files[i].isDirectory()){
-                  model.addElement(files[i].getName());
+                  model.addElement("~~ " + files[i].getName());
                   rightFileList.add(files[i]);
               }
           }
@@ -149,11 +171,11 @@ public class FilePanel extends JSplitPane {
             if (!files[i].isDirectory()){
               if (FilePanel.this.detailsState){
                   String fileWithDetails = FilePanel.this.formatToDetails(files[i]);
-                  model.addElement(fileWithDetails);
+                  model.addElement("-- " + fileWithDetails);
               } else {
-                  model.addElement(files[i].getName());
+                  model.addElement("-- " + files[i].getName());
               }
-              rightFileList.add(files[i]);
+            rightFileList.add(files[i]);
           }
         }
         rightList.setModel(model);
@@ -165,18 +187,20 @@ public class FilePanel extends JSplitPane {
       }
       
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() > 2) {
-          TreePath pathS = event.getPath();
-          String path = "";
-          for(int i = 0; i < pathS.getPathCount(); i++) {
-              path += "\\" + pathS.getPathComponent(i);
+        if (FilePanel.this.rightFileList.size() > 0) {
+          if (e.getClickCount() > 2) {
+            TreePath pathS = event.getPath();
+            String path = "";
+            for(int i = 0; i < pathS.getPathCount(); i++) {
+                path += "\\" + pathS.getPathComponent(i);
+            }
+            executor.execute(path);
           }
-          executor.execute(path);
+          if (e.getButton() == 3) {
+            System.out.println("Right click detected");
+          }
         }
-        if (e.getButton() == 3) {
-          System.out.println("Right click detected");
-        }
-    }
+      }
 
     /*
     * @desc: get all files and folders within specified file name
@@ -190,7 +214,6 @@ public class FilePanel extends JSplitPane {
           files = baseFile.listFiles();
           return files;
       }
-
     }
     public class FileExecute {
     /*
@@ -205,10 +228,26 @@ public class FilePanel extends JSplitPane {
         } catch (IOException ex) {
             System.out.println(ex.toString());
         }
+      }
     }
-  }
 
 
+  public class RightSideMouse extends MouseAdapter {
+
+    FileExecute executor = new FileExecute();
+
+      public void mouseClicked(MouseEvent e) {
+        if (FilePanel.this.rightFileList.size() > 0) {
+          if (e.getClickCount() > 1) {
+            String pathS = FilePanel.this.rightFileList.get(FilePanel.this.rightList.getSelectedIndex()).toString();
+            executor.execute(pathS);
+          }
+          if (e.getButton() == 3) {
+            System.out.println("Right click detected");
+          }
+        }
+      }
+    }
   public static class ExpandTreeActionListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {

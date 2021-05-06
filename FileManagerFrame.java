@@ -39,6 +39,7 @@ public class FileManagerFrame extends JInternalFrame {
             */
             FilePanel fp = new FilePanel();
             JInternalFrame fileManager = new FileManagerFrame();
+            
             String userDrive = ToolBar.drives.getSelectedItem().toString().substring(0, 3);
             fileManager.add(fp);
             fp.leftDirPanel.treeRenderer.rootPath = userDrive;

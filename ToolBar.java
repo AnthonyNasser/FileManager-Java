@@ -31,8 +31,6 @@ public class ToolBar extends JToolBar{
 
         drives = new JComboBox();
         drives.addActionListener(tbActionListener);
-
-        System.out.println(filePaths[0].toString());
         activeDrive = filePaths[0].toString();
         for (File file : filePaths) {
         	String fileName = file.toString();
