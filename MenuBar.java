@@ -1,15 +1,12 @@
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
-
 import javax.swing.JDialog;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import java.awt.BorderLayout;
 
 public class MenuBar extends JMenuBar {
 
@@ -18,10 +15,7 @@ public class MenuBar extends JMenuBar {
   JMenu tree;
   JMenu window;
   File[] paths;
-  
-  
- 
-  
+
   JMenuBar menubar;
 
   public MenuBar() {
@@ -31,10 +25,6 @@ public class MenuBar extends JMenuBar {
     this.setSize(10000, 50);
     this.add(menubar);
     setVisible(true);
-    
-
-    
-  
   }
 
   private void fileItems() {
@@ -45,7 +35,7 @@ public class MenuBar extends JMenuBar {
 
   private void helpItems() {
     JMenuItem h = new JMenuItem("Help");
-    h.addActionListener(new helpButtonActionListener() );
+    h.addActionListener(new helpButtonActionListener());
     help.add(h);
   }
 
@@ -83,7 +73,6 @@ public class MenuBar extends JMenuBar {
     windowItems();
     helpItems();
 
-
     menubar.add(file);
     menubar.add(tree);
     menubar.add(window);
@@ -91,19 +80,19 @@ public class MenuBar extends JMenuBar {
   }
 
   private class ExitActionListener implements ActionListener {
+
     @Override
     public void actionPerformed(ActionEvent e) {
       System.exit(0);
     }
   }
-  
-  private class helpButtonActionListener implements ActionListener{
 
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			JDialog helpBox = new HelpBox();
-			helpBox.setVisible(true);
-		}
-		
-	}
+  private class helpButtonActionListener implements ActionListener {
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      JDialog helpBox = new HelpBox();
+      helpBox.setVisible(true);
+    }
+  }
 }

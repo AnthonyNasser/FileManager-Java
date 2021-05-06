@@ -1,10 +1,6 @@
 import java.awt.Dimension;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.JViewport;
 
 public class DirectoryPanel extends JScrollPane {
 
@@ -13,14 +9,16 @@ public class DirectoryPanel extends JScrollPane {
   public JTree tree;
 
   public DirectoryPanel(String p) {
-    this.path = "C:\\";
+    this.path = ToolBar.activeDrive;
     this.treeRenderer = new TreeRenderer(path);
     this.tree = treeRenderer.getTree();
-    this.setMaximumSize(new Dimension(AppBuilder.WIDTH_FM, AppBuilder.HEIGHT_FM));
+    this.setMaximumSize(
+        new Dimension(AppBuilder.WIDTH_FM, AppBuilder.HEIGHT_FM)
+      );
     this.setViewportView(tree);
   }
 
   public JTree getTree() {
-      return this.tree;
+    return this.tree;
   }
 }
