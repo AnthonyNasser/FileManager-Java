@@ -1,13 +1,9 @@
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
-import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
@@ -20,8 +16,6 @@ import java.awt.event.ActionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import FilePanel.FileActionListener.RightSideMouse;
-
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
@@ -30,17 +24,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Component;
 
 public class FilePanel extends JSplitPane {
-    private TreeSelectionListener listener = new FileActionListener();
+    public FileActionListener listener = new FileActionListener();
     private RightSideMouse listenRight = new RightSideMouse();
     public JScrollPane rightSide;
     public DefaultListModel model;
     public JList rightList;
     public ArrayList<File> rightFileList;
   
-    public static DirectoryPanel leftDirPanel;
+    public DirectoryPanel leftDirPanel;
     public static String leftDirectoryPath = ToolBar.activeDrive;
     public static String defaultPathway = "";
     public static JTree leftTree;
@@ -90,6 +83,7 @@ public class FilePanel extends JSplitPane {
         //       return this;
         //   }
         // });
+
         detailsState = true;
     }
 
@@ -113,43 +107,61 @@ public class FilePanel extends JSplitPane {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM / dd / yyyy");
         DecimalFormat decFormat = new DecimalFormat("#, ###");
 
-        String formatted = String.format("%-55s %30s %30s", fileName, dateFormat.format(file.lastModified()), decFormat.format(file.lastModified()));
+        String formatted = String.format("%-55s %-30s %-30s", fileName, dateFormat.format(file.lastModified()), decFormat.format(file.lastModified()));
         return formatted;
       }
 
-      public class FileActionListener extends MouseAdapter implements TreeSelectionListener {
+      public void deleteFile(int index) {
+        model.remove(index);
+        rightFileList.remove(index);
+      }
 
-        private TreeSelectionEvent event;
+      public void rename(String newName, int indexToChange) {
+        File oldFile = rightFileList.get(indexToChange);
+        File newFile = new File(newName);
+        System.out.println("Renaming to: " + oldFile.renameTo(newFile));
+        String n = newFile.getName();
+        model.set(indexToChange, n);
+      }
+
+    public class FileActionListener extends MouseAdapter implements TreeSelectionListener {
+
+        public TreeSelectionEvent event = null;
         FileExecute executor = new FileExecute();
 
         @Override
         public void valueChanged(TreeSelectionEvent e) {
-            this.event = e;
-            TreePath p = event.getPath();
-            String path = p.getPathComponent(0).toString();
-            for(int i = 1; i < p.getPathCount(); i++) {
-              path += "\\" + p.getPathComponent(i);
-            }
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent();
-            if (node == null) {
-              return;
-            }
-            File newFile = new File(path);
-            if (newFile.isDirectory() && newFile.exists()) {
-              try {
-                if (newFile.list() != null) {
-                  for (String file : newFile.list()) {
-                    if (new File(file).isDirectory()) {
-                      node.add(new DefaultMutableTreeNode(file));
-                    }
+          this.event = e;
+          updatePanel(event);
+        }
+        
+        public void updatePanel(TreeSelectionEvent e) {
+          this.event = e;
+          TreePath p = event.getPath();
+          String path = p.getPathComponent(0).toString();
+          for(int i = 1; i < p.getPathCount(); i++) {
+            path += "\\" + p.getPathComponent(i);
+          }
+          DefaultMutableTreeNode node = (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent();
+          if (node == null) {
+            return;
+          }
+          File newFile = new File(path);
+          if (newFile.isDirectory() && newFile.exists()) {
+            try {
+              if (newFile.list() != null) {
+                for (String file : newFile.list()) {
+                  if (new File(file).isDirectory()) {
+                    node.add(new DefaultMutableTreeNode(file));
                   }
-                  displayRight(newFile);
                 }
-              } catch (Exception err) {
-                System.out.println("Cannot open File! " + err);
+                displayRight(newFile);
               }
+            } catch (Exception err) {
+              System.out.println("Cannot open File! " + err);
             }
           }
+        }
 
         public void displayRight(File directory) {
           File[] files;
@@ -163,7 +175,7 @@ public class FilePanel extends JSplitPane {
           rightFileList.clear();
           for (int i = 0; i < files.length; i++) {
               if(files[i].isDirectory()){
-                  model.addElement("~~ " + files[i].getName());
+                  model.addElement("+++ " + files[i].getName());
                   rightFileList.add(files[i]);
               }
           }
@@ -180,11 +192,6 @@ public class FilePanel extends JSplitPane {
         }
         rightList.setModel(model);
       }
-
-      public void deleteFile(int index) {
-        model.remove(index);
-        rightFileList.remove(index);
-      }
       
       public void mouseClicked(MouseEvent e) {
         if (FilePanel.this.rightFileList.size() > 0) {
@@ -195,9 +202,6 @@ public class FilePanel extends JSplitPane {
                 path += "\\" + pathS.getPathComponent(i);
             }
             executor.execute(path);
-          }
-          if (e.getButton() == 3) {
-            System.out.println("Right click detected");
           }
         }
       }
@@ -230,12 +234,8 @@ public class FilePanel extends JSplitPane {
         }
       }
     }
-
-
-  public class RightSideMouse extends MouseAdapter {
-
-    FileExecute executor = new FileExecute();
-
+    public class RightSideMouse extends MouseAdapter {
+      FileExecute executor = new FileExecute();
       public void mouseClicked(MouseEvent e) {
         if (FilePanel.this.rightFileList.size() > 0) {
           if (e.getClickCount() > 1) {
@@ -244,16 +244,25 @@ public class FilePanel extends JSplitPane {
           }
           if (e.getButton() == 3) {
             System.out.println("Right click detected");
+            
+            String pathS = FilePanel.this.rightFileList.get(FilePanel.this.rightList.getSelectedIndex()).getAbsolutePath();
+            System.out.println( FilePanel.this.rightFileList.get(FilePanel.this.rightList.getSelectedIndex()).getPath());
+            
+            FilePanel.this.rename("BOOOGER", FilePanel.this.rightList.getSelectedIndex());
           }
         }
       }
     }
+
+
+
   public static class ExpandTreeActionListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         FilePanel.setNodeExpandedState(leftTree, (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent(), true);
     }
   }
+
   public static class CollapseTreeActionListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {

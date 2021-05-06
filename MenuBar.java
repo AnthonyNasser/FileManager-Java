@@ -1,7 +1,10 @@
 import java.io.File;
+
+import javax.swing.JDialog;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,7 +18,10 @@ public class MenuBar extends JMenuBar {
   JMenu tree;
   JMenu window;
   File[] paths;
-
+  
+  
+ 
+  
   JMenuBar menubar;
 
   public MenuBar() {
@@ -25,6 +31,10 @@ public class MenuBar extends JMenuBar {
     this.setSize(10000, 50);
     this.add(menubar);
     setVisible(true);
+    
+
+    
+  
   }
 
   private void fileItems() {
@@ -35,6 +45,7 @@ public class MenuBar extends JMenuBar {
 
   private void helpItems() {
     JMenuItem h = new JMenuItem("Help");
+    h.addActionListener(new helpButtonActionListener() );
     help.add(h);
   }
 
@@ -52,7 +63,8 @@ public class MenuBar extends JMenuBar {
   private void windowItems() {
     JMenuItem w = new JMenuItem("New Window");
     JMenuItem w2 = new JMenuItem("Cascade");
-    ActionListener buttonAL = new FileManagerFrame.ButtonActionListener();
+    FileManagerFrame fm = new FileManagerFrame();
+    ActionListener buttonAL = fm.new ButtonActionListener();
     ActionListener cascadeAL = new FileManagerFrame.CascadeActionListener();
     w.addActionListener(buttonAL);
     w2.addActionListener(cascadeAL);
@@ -85,6 +97,13 @@ public class MenuBar extends JMenuBar {
     }
   }
   
+  private class helpButtonActionListener implements ActionListener{
 
-
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JDialog helpBox = new HelpBox();
+			helpBox.setVisible(true);
+		}
+		
+	}
 }

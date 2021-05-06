@@ -93,8 +93,8 @@ public class ToolBar extends JToolBar{
           return;
         }
         activeFrame.setTitle(userDrive);
-        FilePanel.leftDirPanel.treeRenderer.rootPath = userDrive;
-        FilePanel.leftDirPanel.treeRenderer.buildTree();
+        activeFrame.fp.leftDirPanel.treeRenderer.rootPath = userDrive;
+        activeFrame.fp.leftDirPanel.treeRenderer.buildTree();
       }	
     }
 
@@ -102,7 +102,14 @@ public class ToolBar extends JToolBar{
       @Override
       public void actionPerformed(ActionEvent e) {
         FilePanel.detailsState = true;
-        System.out.println(FilePanel.detailsState);
+        if (AppBuilder.dp == null) {
+          return;
+        }
+        FileManagerFrame activeFrame = (FileManagerFrame) AppBuilder.dp.getSelectedFrame();
+        if (activeFrame == null) {
+          return;
+        }
+        activeFrame.fp.listener.updatePanel(activeFrame.fp.listener.event);
       }
     }
 
@@ -110,7 +117,14 @@ public class ToolBar extends JToolBar{
       @Override
       public void actionPerformed(ActionEvent e) {
         FilePanel.detailsState = false;
-        System.out.println(FilePanel.detailsState);
+        if (AppBuilder.dp == null) {
+          return;
+        }
+        FileManagerFrame activeFrame = (FileManagerFrame) AppBuilder.dp.getSelectedFrame();
+        if (activeFrame == null) {
+          return;
+        }
+        activeFrame.fp.listener.updatePanel(activeFrame.fp.listener.event);
       }
-    }
+      }
 }

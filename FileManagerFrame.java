@@ -5,7 +5,10 @@ import javax.swing.JInternalFrame;
 
 public class FileManagerFrame extends JInternalFrame {
 
+    FilePanel fp;
+
     public FileManagerFrame() {
+        fp = new FilePanel();
         this.setResizable(true);
         this.setMaximizable(true);
         this.setIconifiable(true);
@@ -29,7 +32,7 @@ public class FileManagerFrame extends JInternalFrame {
             }
         }
     }
-    public static class ButtonActionListener implements ActionListener {
+    public class ButtonActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             /* 
@@ -37,8 +40,9 @@ public class FileManagerFrame extends JInternalFrame {
             *  Jinternal is created and filePanel is added in it
             *  Jinternal is added to static dp
             */
-            FilePanel fp = new FilePanel();
-            JInternalFrame fileManager = new FileManagerFrame();
+            FilePanel filePanel = new FilePanel();
+            JInternalFrame fileManager = FileManagerFrame.this;
+            FileManagerFrame.this.fp = filePanel;
             
             String userDrive = ToolBar.drives.getSelectedItem().toString().substring(0, 3);
             fileManager.add(fp);

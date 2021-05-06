@@ -37,9 +37,11 @@ public class AppBuilder extends JFrame{
         initialFilePanel.leftDirPanel.treeRenderer.rootPath = userDrive;
         ToolBar.activeDrive = userDrive;
         initialFilePanel.leftDirPanel.treeRenderer.buildTree();
-        initialFrame.setTitle(ToolBar.activeDrive);
+        initialFrame.fp = initialFilePanel;
 
         initialFrame.setSize(WIDTH_FM, HEIGHT_FM);
+        initialFrame.add(initialFilePanel);
+
         initialFrame.setTitle(ToolBar.activeDrive);
     }
     
@@ -54,7 +56,6 @@ public class AppBuilder extends JFrame{
         topPanel.add(menuBar, BorderLayout.NORTH);
         topPanel.add(toolBar, BorderLayout.SOUTH);
 
-        initialFrame.add(initialFilePanel);
         dp.add(initialFrame);
 
         midPanel.add(dp, BorderLayout.CENTER);
