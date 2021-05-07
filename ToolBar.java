@@ -6,6 +6,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.filechooser.FileSystemView;
 
 public class ToolBar extends JToolBar {
 
@@ -26,15 +27,17 @@ public class ToolBar extends JToolBar {
   }
 
   private void buildToolBar() {
-    // FileSystemView fsView = FileSystemView.getFileSystemView();
+    FileSystemView fsView = FileSystemView.getFileSystemView();
     filePaths = File.listRoots();
 
     drives = new JComboBox();
     drives.addActionListener(tbActionListener);
-    activeDrive = filePaths[0].toString();
+    activeDrive =
+      filePaths[0].toString() +
+      fsView.getSystemDisplayName(new File(filePaths[0].getName()));
     for (File file : filePaths) {
       String fileName = file.toString();
-      drives.addItem(fileName);
+      drives.addItem(fileName + fsView.getSystemDisplayName(file));
     }
 
     details = new JButton("Details");
@@ -104,14 +107,8 @@ public class ToolBar extends JToolBar {
     @Override
     public void actionPerformed(ActionEvent e) {
       FilePanel.detailsState = true;
-      if (AppBuilder.dp == null) {
-        return;
-      }
-      FileManagerFrame activeFrame = (FileManagerFrame) AppBuilder.dp.getSelectedFrame();
-      if (activeFrame == null) {
-        return;
-      }
-      activeFrame.fp.listener.updatePanel(activeFrame.fp.listener.event);
+      FilePanel fp = FilePanel.getActiveFilePanel();
+      fp.listener.updatePanel(fp.listener.event);
     }
   }
 
@@ -120,14 +117,8 @@ public class ToolBar extends JToolBar {
     @Override
     public void actionPerformed(ActionEvent e) {
       FilePanel.detailsState = false;
-      if (AppBuilder.dp == null) {
-        return;
-      }
-      FileManagerFrame activeFrame = (FileManagerFrame) AppBuilder.dp.getSelectedFrame();
-      if (activeFrame == null) {
-        return;
-      }
-      activeFrame.fp.listener.updatePanel(activeFrame.fp.listener.event);
+      FilePanel fp = FilePanel.getActiveFilePanel();
+      fp.listener.updatePanel(fp.listener.event);
     }
   }
 }

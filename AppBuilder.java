@@ -5,7 +5,6 @@ import javax.swing.JInternalFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-
 public class AppBuilder extends JFrame {
 
   JPanel midPanel, topPanel;
@@ -23,6 +22,7 @@ public class AppBuilder extends JFrame {
   private final int HEIGHT_JF = 700;
 
   public AppBuilder() {
+
     midPanel = new JPanel();
     topPanel = new JPanel();
     baseFrame = this;
@@ -45,10 +45,10 @@ public class AppBuilder extends JFrame {
     initialFrame.add(initialFilePanel);
 
     initialFrame.setTitle(ToolBar.activeDrive);
+    this.setLocationRelativeTo(null);
   }
 
   public void buildApp() {
-    this.setLocationRelativeTo(null);
     this.setSize(WIDTH_JF, HEIGHT_JF);
     this.setTitle("Epic Java File-Manager");
 
@@ -58,10 +58,11 @@ public class AppBuilder extends JFrame {
     topPanel.add(menuBar, BorderLayout.NORTH);
     topPanel.add(toolBar, BorderLayout.SOUTH);
 
+    
     dp.add(initialFrame);
-
-    midPanel.add(dp, BorderLayout.CENTER);
+    midPanel.add(dp);
     midPanel.add(topPanel, BorderLayout.NORTH);
+
 
     this.add(midPanel, BorderLayout.CENTER);
 

@@ -1,38 +1,74 @@
-import javax.swing.JButton;
-import javax.swing.JPopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 public class RightClickMenu extends JPopupMenu {
 
-  JButton renameButton;
-  JButton copyButton;
-  JButton pasteButton;
-  JButton deleteButton;
+  JMenuItem renameButton;
+  JMenuItem copyButton;
+  JMenuItem pasteButton;
+  JMenuItem deleteButton;
 
   public RightClickMenu() {
-    renameButton = new JButton("Rename");
-    copyButton = new JButton("Copy");
-    pasteButton = new JButton("Paste");
-    deleteButton = new JButton("Delete");
+    renameButton = new JMenuItem("Rename");
+    copyButton = new JMenuItem("Copy");
+    deleteButton = new JMenuItem("Delete");
 
     ActionListener renameAL = new RenamePopUp();
     renameButton.addActionListener(renameAL);
 
+    ActionListener copyAL = new CopyPopUp();
+    copyButton.addActionListener(copyAL);
+
+    ActionListener deleteAL = new DeleteActionListener();
+    deleteButton.addActionListener(deleteAL);
+
     this.add(renameButton);
     this.add(copyButton);
-    this.add(pasteButton);
     this.add(deleteButton);
+  }
+
+  public static class RenamePopUp implements ActionListener {
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      RenameBox renameBox;
+      FilePanel fp = FilePanel.getActiveFilePanel();
+
+      renameBox =
+        new RenameBox(
+          fp.rightFileList.get(fp.rightList.getMaxSelectionIndex()).getName(),
+          "Rename"
+        );
+      renameBox.setLocationRelativeTo(null);
+      renameBox.setVisible(true);
     }
-    public class RenamePopUp implements ActionListener {
-        RenameBox renameBox;
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            System.out.println(RenameBox.textField.getText());
-            System.out.println(RenameBox.textField_1.getText());
-            renameBox = new RenameBox();
-            renameBox.setLocationRelativeTo(null);
-            renameBox.setVisible(true);
-        }
+  }
+
+  public static class CopyPopUp implements ActionListener {
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      RenameBox renameBox;
+      FilePanel fp = FilePanel.getActiveFilePanel();
+
+      renameBox =
+        new RenameBox(
+          fp.rightFileList.get(fp.rightList.getMaxSelectionIndex()).getName(),
+          "Copying"
+        );
+      renameBox.setLocationRelativeTo(null);
+      renameBox.setVisible(true);
     }
+  }
+
+  public static class DeleteActionListener implements ActionListener {
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      FilePanel fp = FilePanel.getActiveFilePanel();
+      fp.deleteFile(fp.rightList.getMaxSelectionIndex());
+    }
+  }
 }

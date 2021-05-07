@@ -32,31 +32,4 @@ public class FileManagerFrame extends JInternalFrame {
       }
     }
   }
-
-  public class ButtonActionListener implements ActionListener {
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      /*
-       *  dp(DesktopPane) is now static
-       *  Jinternal is created and filePanel is added in it
-       *  Jinternal is added to static dp
-       */
-      FilePanel filePanel = new FilePanel();
-      JInternalFrame fileManager = FileManagerFrame.this;
-      FileManagerFrame.this.fp = filePanel;
-
-      String userDrive = ToolBar.drives
-        .getSelectedItem()
-        .toString()
-        .substring(0, 3);
-      fileManager.add(fp);
-      fp.leftDirPanel.treeRenderer.rootPath = userDrive;
-      ToolBar.activeDrive = userDrive;
-      fp.leftDirPanel.treeRenderer.buildTree();
-      fileManager.setTitle(ToolBar.activeDrive);
-
-      AppBuilder.dp.add(fileManager);
-    }
-  }
 }

@@ -1,6 +1,14 @@
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Font;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -9,8 +17,12 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
@@ -26,8 +38,8 @@ import javax.swing.tree.TreePath;
 
 public class FilePanel extends JSplitPane {
 
-  public FileActionListener listener = new FileActionListener();
-  private RightSideMouse listenRight = new RightSideMouse();
+  public FileActionListener listener;
+  private RightSideMouse listenRight;
   public JScrollPane rightSide;
   public DefaultListModel model;
   public JList rightList;
@@ -36,10 +48,12 @@ public class FilePanel extends JSplitPane {
   public DirectoryPanel leftDirPanel;
   public static String leftDirectoryPath = ToolBar.activeDrive;
   public static String defaultPathway = "";
-  public static JTree leftTree;
+  public JTree leftTree;
   public static Boolean detailsState;
 
   public FilePanel() {
+    listener = new FileActionListener();
+    listenRight = new RightSideMouse();
     leftDirPanel = new DirectoryPanel(leftDirectoryPath);
     leftTree = leftDirPanel.getTree();
 
@@ -49,7 +63,7 @@ public class FilePanel extends JSplitPane {
     rightFileList = new ArrayList<File>();
     rightSide.setViewportView(rightList);
     rightSide.setHorizontalScrollBar(new JScrollBar(JScrollBar.HORIZONTAL));
-    rightList.setFont(new Font("Roboto", Font.PLAIN, 12));
+    rightList.setFont(new Font("Courier New", Font.PLAIN, 12));
 
     this.setLeftComponent(leftDirPanel);
     this.setRightComponent(rightSide);
@@ -61,6 +75,8 @@ public class FilePanel extends JSplitPane {
 
     this.setAutoscrolls(true);
     this.setSize(new Dimension(950, 700));
+    rightList.setDragEnabled(true);
+    rightList.setDropTarget(this.new listDropTarget());
     this.setVisible(true);
 
     // rightList.setCellRenderer(new DefaultListCellRenderer() {
@@ -104,7 +120,7 @@ public class FilePanel extends JSplitPane {
     DecimalFormat decFormat = new DecimalFormat("#, ###");
 
     String formatted = String.format(
-      "%-55s %-30s %-30s",
+      "%-30s %-20s %-20s",
       fileName,
       dateFormat.format(file.lastModified()),
       decFormat.format(file.lastModified())
@@ -123,6 +139,68 @@ public class FilePanel extends JSplitPane {
     oldFile.renameTo(newFile);
     String n = newFile.getName();
     model.set(indexToChange, n);
+  }
+
+  public void copy(File fileToCopy) {
+    File newFile = new File(fileToCopy.getName() + " - Copy");
+    model.addElement(newFile);
+    rightFileList.add(newFile);
+    rightList.setModel(model);
+  }
+
+  public FilePanel getActive() {
+    if (AppBuilder.dp == null) {
+      return new FilePanel();
+    }
+    FileManagerFrame activeFrame = (FileManagerFrame) AppBuilder.dp.getSelectedFrame();
+    if (activeFrame == null) {
+      return new FilePanel();
+    }
+    return activeFrame.fp;
+  }
+  class listDropTarget extends DropTarget {
+
+    public void drop(DropTargetDropEvent evt) {
+      String temp = "";
+
+      evt.acceptDrop(DnDConstants.ACTION_COPY);
+      List result = new ArrayList();
+      if (
+        evt.getTransferable().isDataFlavorSupported(DataFlavor.stringFlavor)
+      ) {
+        try {
+          temp =
+            (String) evt
+              .getTransferable()
+              .getTransferData(DataFlavor.stringFlavor);
+        } catch (UnsupportedFlavorException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        String[] next = temp.split("\n");
+
+        for (int i = 0; i < next.length; i++) model.addElement(next[i]);
+      } else {
+        try {
+          result =
+            (List) evt
+              .getTransferable()
+              .getTransferData(DataFlavor.javaFileListFlavor);
+        } catch (UnsupportedFlavorException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        //process the input
+        for (Object o : result) {
+          System.out.println(o.toString());
+          model.addElement(o.toString());
+        }
+      }
+    }
   }
 
   public class FileActionListener
@@ -223,7 +301,18 @@ public class FilePanel extends JSplitPane {
     }
   }
 
-  public class FileExecute {
+  public static FilePanel getActiveFilePanel() {
+    if (AppBuilder.dp == null) {
+      return new FilePanel();
+    }
+    FileManagerFrame activeFrame = (FileManagerFrame) AppBuilder.dp.getSelectedFrame();
+    if (activeFrame == null) {
+      return new FilePanel();
+    }
+    return activeFrame.fp;
+  }
+
+  public static class FileExecute {
 
     /*
      * @desc: opens or executes file
@@ -247,8 +336,6 @@ public class FilePanel extends JSplitPane {
     JPopupMenu rightPop;
 
     public void mouseClicked(MouseEvent e) {
-      RenameBox.textField = new JTextField(FilePanel.this.rightFileList.get(FilePanel.this.rightList.getSelectedIndex()).toString());
-      RenameBox.textField.setText(FilePanel.this.rightFileList.get(FilePanel.this.rightList.getSelectedIndex()).toString());
       if (FilePanel.this.rightFileList.size() > 0) {
         if (e.getClickCount() > 1) {
           String pathS =
@@ -275,8 +362,8 @@ public class FilePanel extends JSplitPane {
     @Override
     public void actionPerformed(ActionEvent e) {
       FilePanel.setNodeExpandedState(
-        leftTree,
-        (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent(),
+        FilePanel.getActiveFilePanel().leftTree,
+        (DefaultMutableTreeNode) FilePanel.getActiveFilePanel().leftTree.getLastSelectedPathComponent(),
         true
       );
     }
@@ -287,8 +374,8 @@ public class FilePanel extends JSplitPane {
     @Override
     public void actionPerformed(ActionEvent e) {
       FilePanel.setNodeExpandedState(
-        leftTree,
-        (DefaultMutableTreeNode) leftTree.getLastSelectedPathComponent(),
+        FilePanel.getActiveFilePanel().leftTree,
+        (DefaultMutableTreeNode) FilePanel.getActiveFilePanel().leftTree.getLastSelectedPathComponent(),
         false
       );
     }
@@ -304,7 +391,6 @@ public class FilePanel extends JSplitPane {
       for (int i = 0; i < node.getChildCount(); i++) {
         nodeList.add((DefaultMutableTreeNode) node.getChildAt(i));
       }
-
       for (DefaultMutableTreeNode treeNode : nodeList) {
         setNodeExpandedState(tree, treeNode, expanded);
       }

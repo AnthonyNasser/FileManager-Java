@@ -23,7 +23,7 @@ public class HelpBox extends JDialog {
       JLabel lblNewLabel = new JLabel(
         "Project by Anthony Nasser and Malhar Pandya."
       );
-      lblNewLabel.setFont(new Font("Yu Gothic UI", Font.BOLD, 19));
+      lblNewLabel.setFont(new Font("Courier New", Font.BOLD, 19));
       contentPanel.add(lblNewLabel);
     }
     {
@@ -44,6 +44,7 @@ public class HelpBox extends JDialog {
         buttonPane.add(cancelButton);
       }
     }
+    // this.setLocationRelativeTo(null);
   }
 
   class helpActionListener implements ActionListener {

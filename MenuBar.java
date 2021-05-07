@@ -28,8 +28,22 @@ public class MenuBar extends JMenuBar {
   }
 
   private void fileItems() {
+    JMenuItem rename = new JMenuItem("Rename");
+    JMenuItem copy = new JMenuItem("Copy");
+    JMenuItem delete = new JMenuItem("Delete");
+    JMenuItem run = new JMenuItem("Run");
     JMenuItem exit = new JMenuItem("Exit");
+
+    rename.addActionListener(new RightClickMenu.RenamePopUp());
+    copy.addActionListener(new RightClickMenu.CopyPopUp());
+    delete.addActionListener(new RightClickMenu.DeleteActionListener());
+    run.addActionListener(new RunExecute());
     exit.addActionListener(new ExitActionListener());
+
+    file.add(rename);
+    file.add(copy);
+    file.add(delete);
+    file.add(run);
     file.add(exit);
   }
 
@@ -53,8 +67,7 @@ public class MenuBar extends JMenuBar {
   private void windowItems() {
     JMenuItem w = new JMenuItem("New Window");
     JMenuItem w2 = new JMenuItem("Cascade");
-    FileManagerFrame fm = new FileManagerFrame();
-    ActionListener buttonAL = fm.new ButtonActionListener();
+    ActionListener buttonAL = new ButtonActionListener();
     ActionListener cascadeAL = new FileManagerFrame.CascadeActionListener();
     w.addActionListener(buttonAL);
     w2.addActionListener(cascadeAL);
@@ -93,6 +106,51 @@ public class MenuBar extends JMenuBar {
     public void actionPerformed(ActionEvent e) {
       JDialog helpBox = new HelpBox();
       helpBox.setVisible(true);
+    }
+  }
+
+  private class RunExecute implements ActionListener {
+
+    FilePanel.FileExecute executor = new FilePanel.FileExecute();
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      FilePanel fp = FilePanel.getActiveFilePanel();
+      executor.execute(
+        new File(
+          fp.rightFileList
+            .get(fp.rightList.getMaxSelectionIndex())
+            .getAbsolutePath()
+        )
+      );
+    }
+  }
+
+  public class ButtonActionListener implements ActionListener {
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      /*
+       *  dp(DesktopPane) is now static
+       *  Jinternal is created and filePanel is added in it
+       *  Jinternal is added to static dp
+       */
+      FilePanel filePanel = new FilePanel();
+      FileManagerFrame fileManager = new FileManagerFrame();
+      fileManager.fp = filePanel;
+      
+      String userDrive = ToolBar.drives
+      .getSelectedItem()
+      .toString()
+      .substring(0, 3);
+      
+      fileManager.add(fileManager.fp);
+      fileManager.fp.leftDirPanel.treeRenderer.rootPath = userDrive;
+      ToolBar.activeDrive = userDrive;
+      fileManager.fp.leftDirPanel.treeRenderer.buildTree();
+      fileManager.setTitle(ToolBar.activeDrive);
+      
+      AppBuilder.dp.add(fileManager);
     }
   }
 }
